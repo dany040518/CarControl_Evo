@@ -5,15 +5,19 @@
 #include <Preferences.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include "config.h"
+#include "sensors.h"
 
-const int LUCES = 22;
-const int BOCINA = 21;
-
+// ---------------- Luces y Bocina ----------------
 bool lucesEncendidas = false;
 bool sonando = false;
 bool sonidoRev = false;
 unsigned long ultimaAlarma = 0;
 const unsigned long intervaloBeep = 500;
+
+/*
+const int LUCES = 22;
+const int BOCINA = 21;
 
 const int ENA_IZQ = 15;
 const int IN1_IZQ = 4;
@@ -32,6 +36,7 @@ const int PWM_CANAL_DER = 1;
 // ---- WiFi / HTTP / DNS / MQTT ----
 const char* apSSID = "ESP32_Config";
 const char* apPass = "";
+*/
 
 WiFiClient espClient;
 WebServer server(80);
@@ -40,8 +45,10 @@ const byte DNS_PORT = 53;
 DNSServer dnsServer;
 
 PubSubClient mqttClient(espClient);
+/*
 const char* mqtt_server = "test.mosquitto.org";
 const char* mqtt_topic = "carro/instrucciones";
+*/
 
 Preferences preferences;
 
@@ -87,8 +94,8 @@ void setupMotores() {
 }
 
 void setupMQTT() {
-  mqttClient.setServer(mqtt_server, 1883);
-  Serial.println("[init] MQTT configurado (broker: test.mosquitto.org:1883)");
+  mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
+  Serial.printf("[init] MQTT configurado (broker: %s:%d)\n", MQTT_BROKER, MQTT_PORT);
 }
 
 void setupHTTPServer() {
@@ -144,7 +151,6 @@ void loadCredentials() {
 // ---------------- AP / STA helpers ----------------
 void startAPMode() {
   Serial.println("[AP] Iniciando AP modo de configuración...");
-  // Permitir ambos modos (AP + STA) para facilitar escaneo si se necesita
   WiFi.mode(WIFI_AP_STA);
 
   // Configurar IP estática del AP (opcional, pero explícito)
@@ -154,13 +160,12 @@ void startAPMode() {
   bool okCfg = WiFi.softAPConfig(local_IP, gateway, subnet);
   (void)okCfg; // no crítico
 
-  WiFi.softAP(apSSID, apPass);
-  delay(200); // dejar que el AP se levante
+  WiFi.softAP(AP_SSID, AP_PASS);
+  delay(200);
   IPAddress myIP = WiFi.softAPIP();
   Serial.print("[AP] AP IP: ");
   Serial.println(myIP);
 
-  // Start DNS server to redirect all domains to the ESP IP (captive portal)
   dnsServer.start(DNS_PORT, "*", myIP);
   Serial.println("[AP] DNS servidor iniciado para captive portal");
 }
@@ -192,13 +197,9 @@ void reconnectMQTT() {
   if (mqttClient.connected()) return;
   Serial.print("[MQTT] Intentando conectar a broker...");
   unsigned long start = millis();
-  // intentar un par de veces con timeout corto antes de volver al loop
   while (!mqttClient.connected() && (millis() - start) < 8000) {
-    if (mqttClient.connect("ESP32CarClient")) {
+    if (mqttClient.connect(MQTT_CLIENT_ID)) {
       Serial.println("[MQTT] Conectado al broker.");
-      // No es estrictamente necesario suscribirse para este proyecto,
-      // pero lo dejo como ejemplo:
-      // mqttClient.subscribe("carro/comandos");
       return;
     } else {
       Serial.printf("[MQTT] falla state=%d. retry...\n", mqttClient.state());
@@ -442,7 +443,7 @@ void handleMove() {
   out["duration"] = duration;
   String outStr;
   serializeJson(out, outStr);
-  if (mqttClient.connected()) mqttClient.publish(mqtt_topic, outStr.c_str());
+  if (mqttClient.connected()) mqttClient.publish(MQTT_TOPIC_CMD, outStr.c_str());
 
   // mantener el movimiento el tiempo solicitado (máx 5s)
   delay(duration);
@@ -461,9 +462,11 @@ void setup() {
 
   loadCredentials();
 
+  setupMotores();
   startAPMode();
   setupMQTT();
   setupHTTPServer();
+  sensorsSetup();
 }
 
 void loop() {
@@ -481,6 +484,7 @@ void loop() {
       reconnectMQTT();
     }
     mqttClient.loop();
+    publishUltrasonicIfDue(mqttClient);
   }
 
   // Reinicio tras configurar /connect (flag set en handleConnect)

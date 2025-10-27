@@ -1,20 +1,16 @@
 #pragma once
 
 // ================= Pines Motores y Aux =================
-#define LUCES_PIN      22
-#define BOCINA_PIN     21
+#define LUCES      22
+#define BOCINA     21
 
-#define ENA_IZQ_PIN    15
-#define IN1_IZQ_PIN     4
-#define IN2_IZQ_PIN    16
+#define ENA_IZQ    15
+#define IN1_IZQ     4
+#define IN2_IZQ    16
 
-#define ENA_DER_PIN    19
-#define IN1_DER_PIN    17
-#define IN2_DER_PIN    18
-
-// ================= Ultrasonido HC-SR04 =================
-#define ULTRASONIC_TRIG_PIN  5
-#define ULTRASONIC_ECHO_PIN  2
+#define ENA_DER    19
+#define IN1_DER    17
+#define IN2_DER    18
 
 // ================= PWM =================
 #define PWM_FREQ_HZ    20000
@@ -30,11 +26,23 @@
 #define MQTT_BROKER        "test.mosquitto.org"
 #define MQTT_PORT          1883
 #define MQTT_CLIENT_ID     "ESP32CarClient"
-#define MQTT_TOPIC_CMD     "carro/instrucciones"        // comandos de movimiento (ya lo usas)
-#define MQTT_TOPIC_DIST    "carro/telemetria/distancia" // NUEVO: telemetría de distancia
+#define MQTT_TOPIC_CMD     "carro/instrucciones"
+#define MQTT_TOPIC_DIST    "carro/telemetria/distancia"
 
 // ================= Publicación Ultrasonido =================
-#define ULTRASONIC_MODE_SIM     1       // 1 = simula sin hardware, 0 = usa HC-SR04 real
-#define ULTRASONIC_PUBLISH_MS   1000    // periodo de publicación en ms
+#define ULTRASONIC_MODE_SIM     1
+#define ULTRASONIC_PUBLISH_MS   1000
 #define ULTRASONIC_MIN_CM       2
 #define ULTRASONIC_MAX_CM       400
+
+// -------------------- HC-SR04 Pins (estilo profe) --------------
+#ifndef ULTRASONIC_TRIG_PIN
+  #define ULTRASONIC_TRIG_PIN 35  // Trigger (OUTPUT)
+#endif
+#ifndef ULTRASONIC_ECHO_PIN
+  #define ULTRASONIC_ECHO_PIN 34  // Echo (INPUT) -> 3.3V (usar divisor si aplica)
+#endif
+
+// (opcional) alias const
+static const int trigPin = ULTRASONIC_TRIG_PIN;
+static const int echoPin = ULTRASONIC_ECHO_PIN;
