@@ -22,6 +22,7 @@ void sensorsSetup() {
 }
 
 float readUltrasonicCM() {
+/*
 #if ULTRASONIC_MODE_SIM
   // Caminata aleatoria acotada [MIN, MAX]
   int step = random(-5, 6); // -5..+5
@@ -30,6 +31,7 @@ float readUltrasonicCM() {
   if (simVal > ULTRASONIC_MAX_CM) simVal = ULTRASONIC_MAX_CM;
   return simVal;
 #else
+*/
   // Pulso de 10us en TRIG
   digitalWrite(ULTRASONIC_TRIG_PIN, LOW);
   delayMicroseconds(2);
@@ -60,14 +62,11 @@ void publishUltrasonicIfDue(PubSubClient& mqtt) {
   } else {
     doc["distance_cm"] = d;
   }
-  // (opcional) añade RSSI si estás conectado a WiFi
-  // doc["rssi"] = WiFi.RSSI();
 
   String payload;
   serializeJson(doc, payload);
 
   if (mqtt.connected()) {
-    // QoS 0, retained true (opcional retained: true para tener el último valor)
     mqtt.publish(MQTT_TOPIC_DIST, payload.c_str(), true);
   }
 }
