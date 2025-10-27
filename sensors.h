@@ -1,12 +1,11 @@
 #pragma once
 #include <PubSubClient.h>
 
-// Inicializa pines (o semilla aleatoria) según modo
+// Inicializa pines
 void sensorsSetup();
 
-// Lee distancia en cm (sin argumentos). Puede ser NAN si no hay lectura válida.
+// Lee distancia en cm
 float readUltrasonicCM();
 
-// Publica periódicamente (si toca) al tema MQTT de telemetría.
-// Llamar en loop().
+// Publica periódicamente
 void publishUltrasonicIfDue(PubSubClient& mqtt);
