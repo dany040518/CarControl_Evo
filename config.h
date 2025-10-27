@@ -1,6 +1,6 @@
 #pragma once
 
-// ================= Pines Motores y Aux =================
+// ================= Motores, Luces y Bocina =================
 #define LUCES      22
 #define BOCINA     21
 
@@ -35,7 +35,7 @@
 #define ULTRASONIC_MIN_CM       2
 #define ULTRASONIC_MAX_CM       400
 
-// -------------------- HC-SR04 Pins (estilo profe) --------------
+// -------------------- HC-SR04 Pins --------------
 #ifndef ULTRASONIC_TRIG_PIN
   #define ULTRASONIC_TRIG_PIN 35  // Trigger (OUTPUT)
 #endif
