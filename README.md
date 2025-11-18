@@ -4,6 +4,7 @@
 - Danna Alejandra Sanchez Monsalve
 - Juan Pablo Vargas Jimenez
 
+##Desarrollo
 ### Protocolo TLS y Certificados
 -	¿Qué es el protocolo TLS, cual es su importancia y que es un certificado en ese contexto?
 
@@ -36,9 +37,57 @@ mTLS o TLS mutuo garantiza que las partes de cada extremo de una conexión de re
 
 -	¿Cómo se habilita la validación de certificados en el ESP32?
 
+En el ESP32, la validación de certificados se habilita embebiendo el certificado raíz (CA) en el firmware. Esto se hace configurando el cliente HTTPS o el módulo esp_tls para que use ese certificado al establecer la conexión. El ESP-IDF provee funciones como esp_tls_conn_new_sync() y estructuras como esp_tls_cfg_t donde se especifica el certificado raíz. De esta forma, el ESP32 puede verificar que el servidor al que se conecta está firmado por una CA confiable.
 
--	Si el sketch necesita conectarse a múltiples dominios con certificados generados por CAs distintos, ¿que alternativas hay?
--	¿Cómo se puede obtener el certificado para un dominio?
--	¿A qué se hace referencia cuando se habla de llave publica y privada en el contexto de TLS?
--	¿Que pasará con el código cuando los certificados expiren?
--	¿Que teoría matemática es el fundamento de la criptografía moderna? ¿Cuales son las posibles implicaciones de la computación cuántica para los métodos de criptografía actuales?
+- ¿Cómo se habilita la validación de certificados en el ESP32?
+  
+En el ESP32 la validación de certificados se habilita **embebiendo el certificado raíz (CA) en el firmware**.  
+Esto se configura en el cliente HTTPS o en el módulo `esp_tls` mediante estructuras como `esp_tls_cfg_t`.  
+De esta forma, el ESP32 puede verificar que el servidor al que se conecta está firmado por una CA confiable.  
+
+- Si el sketch necesita conectarse a múltiples dominios con certificados generados por CAs distintos, ¿qué alternativas hay?
+  
+  - Incluir **varios certificados raíz** en el firmware.  
+  - Usar un **certificate bundle** con múltiples certificados raíz.  
+  - Preferir CAs comunes como **Let's Encrypt**, que son ampliamente aceptadas.  
+
+- ¿Cómo se puede obtener el certificado para un dominio?
+  
+Los certificados se obtienen a través de una **Autoridad Certificadora (CA)**.  
+Opciones comunes:  
+  - **Let's Encrypt** (gratuito y automático mediante ACME).  
+  - Proveedores comerciales como DigiCert, GlobalSign o Comodo.
+  
+- ¿A qué se hace referencia cuando se habla de llave pública y privada en el contexto de TLS?
+  
+  TLS usa **criptografía asimétrica**:  
+  - **Llave pública**: se comparte libremente, sirve para cifrar datos o verificar firmas.  
+  - **Llave privada**: se mantiene en secreto, sirve para descifrar datos o generar firmas digitales.  
+
+- ¿Qué pasará con el código cuando los certificados expiren?
+  
+Cuando un certificado expira, el ESP32 (o cualquier cliente TLS) **rechaza la conexión**.  
+Esto provoca que las funciones de red basadas en HTTPS fallen hasta que se renueve el certificado en el servidor y, si se usa validación embebida, también en el firmware.  
+
+
+- ¿Qué teoría matemática es el fundamento de la criptografía moderna?¿Cuáles son las posibles implicaciones de la computación cuántica?
+  
+La criptografía moderna se basa en problemas matemáticos difíciles de resolver:  
+  - **Teoría de números** (factorización de enteros grandes, logaritmos discretos).  
+  - **Curvas elípticas** y álgebra avanzada.  
+  
+La computación cuántica podría romper estos sistemas mediante algoritmos como:  
+  - **Shor** (factorización de enteros).  
+  - **Grover** (búsqueda en bases de datos).  
+Por ello se desarrolla la **criptografía post-cuántica**, basada en problemas resistentes a ataques cuánticos (retículas, funciones hash).  
+
+
+
+## Bibliografia
+- https://youtu.be/AKG-rljqaDE
+- https://youtu.be/vwvtsdSxeq8
+- https://youtu.be/qnYUjl9sirU
+- Explicación de la cadena de confianza de los certificados - SSL Dragon
+- ¿Qué es TLS? | TLS mutuo | Cloudflare
+- https://cursos.asimov.mx/curso_esp32/modulo_9/https-y-certificados-ssl-en-esp32.html
+- https://repository.unad.edu.co/jspui/bitstream/10596/28230/6/ilovepd.pdf
