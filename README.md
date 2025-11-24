@@ -127,7 +127,7 @@ La arquitectura general del sistema se puede resumir así:
 #### 1. PubSubClient
 
 - **Función:** Manejar el protocolo MQTT.
-- **Uso en el proyecto:**
+- **Uso:**
   - Conecta el ESP32 a AWS IoT usando TLS (con `WiFiClientSecure`).
   - Publica la telemetría del ultrasonido.
   - Recibe instrucciones MQTT desde tu app y AWS IoT:
@@ -140,7 +140,7 @@ La arquitectura general del sistema se puede resumir así:
 #### 2. ArduinoJson
 
 - **Función:** Crear y leer JSON ligeros.
-- **Uso en el proyecto:**
+- **Uso:**
   - Construir mensajes JSON como:
     ```json
     { "distancia": 55, "estado": "ADELANTE", "luces": 1 }
@@ -152,7 +152,7 @@ La arquitectura general del sistema se puede resumir así:
 #### 3. WiFi (incluido en el core ESP32)
 
 - **Función:** Control de WiFi (AP + STA).
-- **Uso en el proyecto:**
+- **Uso:**
   - Crear un Access Point “ESP32_Config”.
   - Conectar a tu hotspot como STA.
   - Mantener la red activa para AWS IoT.
@@ -162,7 +162,7 @@ La arquitectura general del sistema se puede resumir así:
 #### 4. WiFiClientSecure
 
 - **Función:** Cliente TCP/TLS.
-- **Uso en el proyecto:**
+- **Uso:**
   - Conectarse a AWS IoT con:
     - Root CA
     - Certificado del dispositivo
@@ -178,7 +178,7 @@ La arquitectura general del sistema se puede resumir así:
   - `ledcAttachPin`, `ledcWrite` (PWM)
   - `Serial.print`, `millis()`
   - `pulseIn` (lectura del HC-SR04)
-- **Uso en tu proyecto:**
+- **Uso:**
   - Control de motores mediante L298N usando PWM LEDC.
   - Control de luces.
   - Control del servo rotando el ultrasonido.
@@ -374,7 +374,7 @@ Los recursos gráficos (`@drawable/adelante`, `@drawable/atras`, etc.) represent
   - Topic: `carro/telemetria/distancia`
   - Tipo de mensaje: JSON.
 
-### 10.2 Comandos soportados (carro/instrucciones)
+### 9.2 Comandos soportados (carro/instrucciones)
 
 - `ADELANTE`
 - `ATRAS`
