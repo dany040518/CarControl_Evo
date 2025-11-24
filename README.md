@@ -122,7 +122,98 @@ La arquitectura general del sistema se puede resumir así:
 
 ## 6. Firmware del ESP32 (Carro)
 
-### 6.1 Librerías utilizadas en la ESP32
+### 6.1 Variables del Preprocesador (config.h)
+
+Estas constantes definen toda la configuración de pines, PWM, WiFi, MQTT, servo y sensores del proyecto.  
+Son compiladas antes de generar el firmware y permiten configurar el comportamiento del robot sin modificar la lógica principal.
+
+---
+
+#### Pines de Motores, Luces y Auxiliares
+
+| Nombre    | Valor | Descripción                                             |
+| --------- | ----- | ------------------------------------------------------- |
+| `LUCES`   | 22    | Pin digital que controla las luces frontales del carro. |
+| `ENA_IZQ` | 33    | PWM para habilitar motor izquierdo.                     |
+| `IN1_IZQ` | 25    | Entrada 1 motor izquierdo (L298N).                      |
+| `IN2_IZQ` | 26    | Entrada 2 motor izquierdo (L298N).                      |
+| `ENA_DER` | 12    | PWM para habilitar motor derecho.                       |
+| `IN1_DER` | 27    | Entrada 1 motor derecho (L298N).                        |
+| `IN2_DER` | 14    | Entrada 2 motor derecho (L298N).                        |
+
+---
+
+#### Configuración PWM para motores
+
+| Nombre          | Valor | Descripción                          |
+| --------------- | ----- | ------------------------------------ |
+| `PWM_FREQ_HZ`   | 1000  | Frecuencia del PWM para motores.     |
+| `PWM_RES_BITS`  | 10    | Resolución de PWM para el L298N.     |
+| `PWM_CANAL_IZQ` | 0     | Canal PWM usado por motor izquierdo. |
+| `PWM_CANAL_DER` | 1     | Canal PWM usado por motor derecho.   |
+
+---
+
+#### WiFi / Access Point
+
+| Nombre    | Valor          | Descripción                                 |
+| --------- | -------------- | ------------------------------------------- |
+| `AP_SSID` | "ESP32_Config" | Nombre del acceso WiFi creado por el carro. |
+| `AP_PASS` | ""             | Contraseña del AP (vacía = abierto).        |
+
+---
+
+#### Configuración MQTT / AWS IoT Core
+
+| Nombre             | Valor                                          | Descripción                              |
+| ------------------ | ---------------------------------------------- | ---------------------------------------- |
+| `AWS_IOT_ENDPOINT` | a2hfirfjvweeu1-ats.iot.us-east-1.amazonaws.com | Endpoint de AWS IoT Core.                |
+| `MQTT_PORT`        | 8883                                           | Puerto TLS obligatorio para AWS IoT.     |
+| `MQTT_CLIENT_ID`   | "ESP32CarClient"                               | Identificador único del carro.           |
+| `MQTT_TOPIC_CMD`   | carro/instrucciones                            | Topic donde el carro recibe comandos.    |
+| `MQTT_TOPIC_DIST`  | carro/telemetria/distancia                     | Telemetría publicada por el ultrasonido. |
+
+---
+
+#### Servo de base rotatoria (para el ultrasonido)
+
+| Nombre            | Valor | Descripción                     |
+| ----------------- | ----- | ------------------------------- |
+| `SERVO_PIN`       | 13    | Pin PWM del servo SG90.         |
+| `SERVO_MIN_ANGLE` | 45    | Ángulo mínimo permitido.        |
+| `SERVO_MAX_ANGLE` | 135   | Ángulo máximo permitido.        |
+| `SERVO_STEP_DEG`  | 5     | Paso angular entre movimientos. |
+| `SERVO_STEP_MS`   | 150   | Tiempo entre pasos del servo.   |
+
+##### Parámetros PWM específicos del servo
+
+| Nombre       | Valor | Descripción                           |
+| ------------ | ----- | ------------------------------------- |
+| `SERVO_FREQ` | 50 Hz | Frecuencia típica de servos.          |
+| `SERVO_BITS` | 16    | Alta resolución para control preciso. |
+
+---
+
+#### Configuración del sensor ultrasónico (HC-SR04)
+
+| Nombre                  | Valor | Descripción                    |
+| ----------------------- | ----- | ------------------------------ |
+| `ULTRASONIC_MODE_SIM`   | 0     | Simulado (1) o real (0).       |
+| `ULTRASONIC_PUBLISH_MS` | 250   | Intervalo de publicación MQTT. |
+| `ULTRASONIC_MIN_CM`     | 2     | Rango mínimo válido.           |
+| `ULTRASONIC_MAX_CM`     | 400   | Rango máximo válido.           |
+| `ULTRASONIC_SAMPLES`    | 3     | Promedio de muestras tomadas.  |
+
+---
+
+#### Pines del HC-SR04
+
+| Nombre                | Valor | Descripción           |
+| --------------------- | ----- | --------------------- |
+| `ULTRASONIC_TRIG_PIN` | 5     | Pin Trigger (OUTPUT). |
+| `ULTRASONIC_ECHO_PIN` | 18    | Pin Echo (INPUT).     |
+
+### 6.2 Librerías utilizadas en la ESP32
 
 #### 1. PubSubClient
 
@@ -193,7 +284,7 @@ La arquitectura general del sistema se puede resumir así:
 - **Uso en el proyecto:**
   - Cuando el ultrasonido está en **modo simulado**, se genera una lectura falsa realista.
 
-### 6.2 Funcionalidad principal
+### 6.3 Funcionalidad principal
 
 - Conectar a una red WiFi configurada (SSID/Password).
 - Establecer conexión MQTT segura con AWS IoT usando certificados.
@@ -205,7 +296,7 @@ La arquitectura general del sistema se puede resumir así:
 - Leer la distancia usando el sensor ultrasónico y enviarla como telemetría.
 - Encender/apagar luces según comandos recibidos.
 
-### 6.3 Payload de telemetría
+### 6.4 Payload de telemetría
 
 El ESP32 publica mensajes en formato JSON, por ejemplo:
 
