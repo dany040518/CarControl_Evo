@@ -68,14 +68,14 @@ La arquitectura general del sistema se puede resumir así:
 
 ## 3. Características principales
 
-- ✅ Control remoto desde Android mediante botones táctiles:
+- Control remoto desde Android mediante botones táctiles:
   - Adelante / Atrás / Izquierda / Derecha / Stop.
-- ✅ Control de luces del carro (ON / OFF).
-- ✅ Lectura en tiempo real de distancia (cm) por MQTT.
-- ✅ Visualización del **estado del carro** (ADELANTE, ATRAS, STOP, etc.).
-- ✅ Comunicación segura con AWS IoT usando TLS y certificados X.509.
-- ✅ Arquitectura relativamente limpia en Android (presentation / domain / data).
-- ✅ Uso de corrutinas y `StateFlow` para manejar telemetría en tiempo real en la app.
+- Control de luces del carro (ON / OFF).
+- Lectura en tiempo real de distancia (cm) por MQTT.
+- Visualización del **estado del carro** (ADELANTE, ATRAS, STOP, etc.).
+- Comunicación segura con AWS IoT usando TLS y certificados X.509.
+- Arquitectura relativamente limpia en Android (presentation / domain / data).
+- Uso de corrutinas y `StateFlow` para manejar telemetría en tiempo real en la app.
 
 ## 4. Requisitos
 
