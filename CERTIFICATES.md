@@ -204,7 +204,8 @@ Resultados: - El canal se cifra\
 
 - El broker acepta la conexión\
 - No se valida al servidor → vulnerable a MITM
-  ![Migracion](assets/img/img1.png)
+
+![Migracion](assets/img/img1.png)
 
 ---
 
