@@ -557,52 +557,58 @@ La app Android parsea este JSON en `MqttManager.procesarTelemetria(jsonStr)` y a
 - Confirmar que el pin de los LEDs esté bien configurado como salida.
 - Verificar alimentación y resistencia limitadora si aplica.
 
-## 12 Limitaciones
+## 12 Uso de memoria FLASH y RAM
+   El dato lo obtenemos directamente de PlatformIO al momento de hacer Built al codigo la consola nos muestra estos mensajes
 
-### 1. **Dependencia total de Internet**
+   RAM:   [=         ]  13.9% (used 45544 bytes from 327680 bytes)
+   Flash: [========  ]  79.4% (used 1041211 bytes from 1310720 bytes) 
+
+## 13 Limitaciones
+
+### 13.1 **Dependencia total de Internet**
 
 - Si el ESP32 o la app Android pierden acceso a Internet, el robot no puede recibir comandos.
 - AWS IoT no funciona sin conectividad.
 
-### 2. **Latencia del MQTT a través de AWS**
+### 13.2 **Latencia del MQTT a través de AWS**
 
 - Los comandos viajan desde el teléfono → AWS → ESP32.
 - Esta ruta agrega latencia (entre 80–200ms aprox.).
 - No apto para control muy rápido como un carro RC de alta velocidad.
 
-### 3. **La app requiere certificados embebidos**
+### 13.3 **La app requiere certificados embebidos**
 
 - Los certificados X.509 deben estar dentro del APK.
 - Esto implica:
   - Regenerar el APK si se renuevan certificados.
   - Cuidado con seguridad (aunque mitigado usando res/raw).
 
-### 4. **Consumo energético del ESP32**
+### 13.4 **Consumo energético del ESP32**
 
 - El uso de WiFi + TLS aumenta el consumo.
 - Si se usa en un carro alimentado por baterías, la autonomía disminuye.
 
-### 5. **L298N no permite control ultra preciso**
+### 13.5 **L298N no permite control ultra preciso**
 
 - El driver no tiene frenos electrónicos avanzados.
 - Velocidades muy bajas pueden perder torque.
 
-### 6. **Sensor ultrasónico limitado**
+### 13.6 **Sensor ultrasónico limitado**
 
 - HC-SR04 tiene ruido, falsos positivos y baja precisión.
 - La telemetría puede mostrar valores erráticos.
 
-### 7. **La app aún no muestra video (ESP32-CAM)**
+### 13.7 **La app aún no muestra video (ESP32-CAM)**
 
 - El proyecto soporta movimiento y telemetría, pero **no streaming de video**.
 - Requiere otra arquitectura (RTSP, ESP32-CAM webserver o WebRTC).
 
-### 8. **No hay autenticación de usuario en la app**
+### 13.8 **No hay autenticación de usuario en la app**
 
 - Cualquiera que tenga el APK y los certificados podría controlar el robot.
 - Futuro: autenticación JWT, OAuth, o API Gateway con IAM.
 
-## 13. Mejoras futuras (Roadmap)
+## 14. Mejoras futuras (Roadmap)
 
 - Añadir **ESP32-CAM** para transmisión de video y/o captura de imágenes.
 - Implementar un **servidor web** en el ESP32 para control local sin Internet.
