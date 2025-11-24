@@ -491,32 +491,31 @@ Estos comandos son publicados por la app Android y consumidos por el ESP32.
 La app Android parsea este JSON en `MqttManager.procesarTelemetria(jsonStr)` y actualiza los flujos internos y la UI.
 
 ## 10. Guía rápida de uso
-
-1. **Montar el carrito**
+###10.1 Montar el carrito
 
    - Conectar el ESP32 al puente H, motores, sensor ultrasónico y luces.
    - Verificar polaridad de alimentación y baterías.
 
-2. **Configurar AWS IoT**
+###10.2 Configurar AWS IoT
 
    - Crear Thing, certificados y política.
    - Configurar topics y permisos.
 
-3. **Subir firmware al ESP32**
+###10.3 Subir firmware al ESP32
 
    - Abrir el proyecto `firmware_esp32` en PlatformIO.
    - Configurar SSID/Password WiFi y endpoint MQTT en el código o en `config.h`.
    - Cargar certificados en el firmware (según la implementación).
    - Compilar y subir al ESP32.
 
-4. **Configurar app Android**
+###10.4 Configurar app Android
 
    - Abrir el módulo `android_app` en Android Studio.
    - En `AppConfig.kt`, configurar `MQTT_BROKER_URI` y `MQTT_CLIENT_ID_ANDROID`.
    - Asegurarse de que `SslSocketFactory` tenga la CA correcta de AWS IoT.
    - Construir e instalar la app en un dispositivo Android.
 
-5. **Ejecutar el sistema**
+###10.5 Ejecutar el sistema
 
    - Encender el carro (ESP32 + puente H + baterías).
    - Confirmar que el ESP32 se conecte a WiFi y a AWS IoT.
@@ -524,7 +523,7 @@ La app Android parsea este JSON en `MqttManager.procesarTelemetria(jsonStr)` y a
    - Verificar que aparezcan valores de distancia en tiempo real.
    - Probar los botones de movimiento y las luces.
 
-6. **Monitoreo en AWS**
+###10.6 Monitoreo en AWS
    - Usar la consola de AWS IoT Core para revisar los mensajes en los topics.
    - Verificar que el carro publique telemetría y reciba comandos correctamente.
 
