@@ -122,7 +122,78 @@ La arquitectura general del sistema se puede resumir así:
 
 ## 6. Firmware del ESP32 (Carro)
 
-### 6.1 Funcionalidad principal
+### 6.1 Librerías utilizadas en la ESP32
+
+#### 1. PubSubClient
+
+- **Función:** Manejar el protocolo MQTT.
+- **Uso en el proyecto:**
+  - Conecta el ESP32 a AWS IoT usando TLS (con `WiFiClientSecure`).
+  - Publica la telemetría del ultrasonido.
+  - Recibe instrucciones MQTT desde tu app y AWS IoT:
+    - ADELANTE / ATRAS / STOP
+    - IZQUIERDA / DERECHA
+    - LUCES_ON / LUCES_OFF
+
+---
+
+#### 2. ArduinoJson
+
+- **Función:** Crear y leer JSON ligeros.
+- **Uso en el proyecto:**
+  - Construir mensajes JSON como:
+    ```json
+    { "distancia": 55, "estado": "ADELANTE", "luces": 1 }
+    ```
+  - Enviar telemetría limpia y estructurada a AWS IoT.
+
+---
+
+#### 3. WiFi (incluido en el core ESP32)
+
+- **Función:** Control de WiFi (AP + STA).
+- **Uso en el proyecto:**
+  - Crear un Access Point “ESP32_Config”.
+  - Conectar a tu hotspot como STA.
+  - Mantener la red activa para AWS IoT.
+
+---
+
+#### 4. WiFiClientSecure
+
+- **Función:** Cliente TCP/TLS.
+- **Uso en el proyecto:**
+  - Conectarse a AWS IoT con:
+    - Root CA
+    - Certificado del dispositivo
+    - Llave privada
+  - Es obligatorio para AWS IoT Core (TLS 1.2).
+
+---
+
+#### 5. Arduino Core para ESP32 (framework-arduinoespressif32)
+
+- **Función:** Funciones esenciales del ESP32:
+  - `pinMode`, `digitalWrite`, `analogWrite` (LEDC)
+  - `ledcAttachPin`, `ledcWrite` (PWM)
+  - `Serial.print`, `millis()`
+  - `pulseIn` (lectura del HC-SR04)
+- **Uso en tu proyecto:**
+  - Control de motores mediante L298N usando PWM LEDC.
+  - Control de luces.
+  - Control del servo rotando el ultrasonido.
+  - Lectura precisa del HC-SR04.
+  - Timers basados en `millis()` para publicar telemetría.
+
+---
+
+#### 6. Random / esp_random (core ESP32)
+
+- **Función:** Generar números aleatorios.
+- **Uso en el proyecto:**
+  - Cuando el ultrasonido está en **modo simulado**, se genera una lectura falsa realista.
+
+### 6.2 Funcionalidad principal
 
 - Conectar a una red WiFi configurada (SSID/Password).
 - Establecer conexión MQTT segura con AWS IoT usando certificados.
@@ -134,7 +205,7 @@ La arquitectura general del sistema se puede resumir así:
 - Leer la distancia usando el sensor ultrasónico y enviarla como telemetría.
 - Encender/apagar luces según comandos recibidos.
 
-### 6.2 Payload de telemetría
+### 6.3 Payload de telemetría
 
 El ESP32 publica mensajes en formato JSON, por ejemplo:
 
@@ -156,12 +227,56 @@ Donde:
 
 ## 7. Aplicación Android (ControlCarrito)
 
-### 7.1 Paquete principal
+### 7.1 Librerías utilizadas
+
+#### 1. **Eclipse Paho MQTT Android Client**
+
+- Proporciona `MqttAndroidClient` para conectarse a AWS IoT.
+- Soporta reconexión automática, callbacks, y QoS.
+- Es la base de la comunicación de tu app con el robot en la nube.
+
+#### 2. **SslSocketFactory (custom)**
+
+- Clase creada para generar un socket TLS usando certificados X.509.
+- Permite que la app autentique contra AWS IoT y publique comandos.
+
+#### 3. **Kotlin Coroutines**
+
+- Gestiona lógica asíncrona sin bloquear la UI.
+- Usamos:
+  - `CoroutineScope`
+  - `Dispatchers`
+  - `viewModelScope`
+  - `launch`
+
+#### 4. **Kotlin Flow**
+
+- Permite recibir telemetría del robot en tiempo real.
+- Usamos:
+  - `MutableStateFlow`
+  - `StateFlow`
+  - `collectLatest`
+
+#### 5. **Jetpack ViewModel**
+
+- Mantiene el estado de la UI.
+- Maneja la conexión MQTT aunque la pantalla rote o se minimice.
+
+#### 6. **Retrofit / OkHttp (ya casi no se usa)**
+
+- Solo queda para el endpoint REST `/healthcheck`.
+- Se mantiene para compatibilidad, pero no controla el robot.
+
+#### 7. **org.json.JSONObject**
+
+- Procesa mensajes JSON que llegan por MQTT desde el ESP32.
+
+### 7.2 Paquete principal
 
 - Nombre de paquete:
   - `com.jpvj.controlcarrito`
 
-### 7.2 Principales clases
+### 7.3 Principales clases
 
 - `AppConfig.kt`
 
@@ -351,7 +466,52 @@ La app Android parsea este JSON en `MqttManager.procesarTelemetria(jsonStr)` y a
 - Confirmar que el pin de los LEDs esté bien configurado como salida.
 - Verificar alimentación y resistencia limitadora si aplica.
 
-## 12. Mejoras futuras (Roadmap)
+## 12 Limitaciones
+
+### 1. **Dependencia total de Internet**
+
+- Si el ESP32 o la app Android pierden acceso a Internet, el robot no puede recibir comandos.
+- AWS IoT no funciona sin conectividad.
+
+### 2. **Latencia del MQTT a través de AWS**
+
+- Los comandos viajan desde el teléfono → AWS → ESP32.
+- Esta ruta agrega latencia (entre 80–200ms aprox.).
+- No apto para control muy rápido como un carro RC de alta velocidad.
+
+### 3. **La app requiere certificados embebidos**
+
+- Los certificados X.509 deben estar dentro del APK.
+- Esto implica:
+  - Regenerar el APK si se renuevan certificados.
+  - Cuidado con seguridad (aunque mitigado usando res/raw).
+
+### 4. **Consumo energético del ESP32**
+
+- El uso de WiFi + TLS aumenta el consumo.
+- Si se usa en un carro alimentado por baterías, la autonomía disminuye.
+
+### 5. **L298N no permite control ultra preciso**
+
+- El driver no tiene frenos electrónicos avanzados.
+- Velocidades muy bajas pueden perder torque.
+
+### 6. **Sensor ultrasónico limitado**
+
+- HC-SR04 tiene ruido, falsos positivos y baja precisión.
+- La telemetría puede mostrar valores erráticos.
+
+### 7. **La app aún no muestra video (ESP32-CAM)**
+
+- El proyecto soporta movimiento y telemetría, pero **no streaming de video**.
+- Requiere otra arquitectura (RTSP, ESP32-CAM webserver o WebRTC).
+
+### 8. **No hay autenticación de usuario en la app**
+
+- Cualquiera que tenga el APK y los certificados podría controlar el robot.
+- Futuro: autenticación JWT, OAuth, o API Gateway con IAM.
+
+## 13. Mejoras futuras (Roadmap)
 
 - Añadir **ESP32-CAM** para transmisión de video y/o captura de imágenes.
 - Implementar un **servidor web** en el ESP32 para control local sin Internet.
@@ -360,11 +520,3 @@ La app Android parsea este JSON en `MqttManager.procesarTelemetria(jsonStr)` y a
 - Guardar logs de telemetría en una base de datos (DynamoDB, por ejemplo) para análisis posterior.
 - Usar más principios de **Clean Architecture / Hexagonal** en todo el proyecto.
 - Internacionalización de la app (ES/EN).
-
-## 13. Créditos y autoría
-
-- Proyecto desarrollado como parte de un curso de **IoT**.
-- Integración de:
-  - **ESP32 + PlatformIO** para firmware.
-  - **AWS IoT Core** para mensajería MQTT segura.
-  - **Android (Kotlin)** para la aplicación móvil.
