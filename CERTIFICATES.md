@@ -204,6 +204,7 @@ Resultados: - El canal se cifra\
 
 - El broker acepta la conexión\
 - No se valida al servidor → vulnerable a MITM
+  ![Migracion](assets/img/img1.png)
 
 ---
 
@@ -213,7 +214,7 @@ Resultados: - El canal se cifra\
 - Para activar TLS se debe usar:\
   mqtt:// + **Encryption (tls) ON**
 
----
+## ![Migracion](assets/img/img2.png)
 
 # 6. Fase 3 -- Activación de validación de certificados
 
@@ -257,6 +258,10 @@ carro\
 
 - Distancias del sensor ultrasónico\
 - Estados de movimiento y luces
+  ![Migracion](assets/img/img3.png)
+  ![Migracion](assets/img/img4.png)
+  ![Migracion](assets/img/img5.png)
+  ![Migracion](assets/img/img6.png)
 
 ---
 
